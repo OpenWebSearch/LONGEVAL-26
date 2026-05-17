@@ -1,5 +1,5 @@
 {
-  "image": "webis/longeval-pyterrier-baseline:dev-0.0.1",
+  "image": "webis/longeval-pyterrier-baseline:dev-0.0.2",
   "customizations": {
     "vscode": {
       "extensions": [
