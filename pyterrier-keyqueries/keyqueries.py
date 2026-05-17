@@ -36,7 +36,7 @@ def get_index(ir_dataset, index_directory):
     return pt.IndexFactory.of(str(index_directory))
 
 
-def process_dataset(ir_dataset, index_directory, output_directory):
+def process_dataset(ir_dataset, index_directory, output_directory, wmodel):
     if (output_directory / "run.txt.gz").exists():
         return
 
@@ -44,7 +44,7 @@ def process_dataset(ir_dataset, index_directory, output_directory):
 
     index = get_index(ir_dataset, index_directory)
     with tracking(export_file_path=output_directory / "retrieval-ir-metadata.yml"):
-        retrieval = pt.terrier.Retriever(index, wmodel="BM25")
+        retrieval = pt.terrier.Retriever(index, wmodel=wmodel)
 
         # potentially do some query processing
         topics = pd.DataFrame(
@@ -74,13 +74,14 @@ def process_dataset(ir_dataset, index_directory, output_directory):
 @click.command()
 @click.option("--dataset", type=str, help="The dataset id or a local directory.")
 @click.option("--output", type=Path, required=True, help="The output directory.")
+@click.option("--wmodel", type=str, required=True, help="The weighting model.")
 @click.option("--index", type=Path, required=True, help="The index directory.")
-def main(dataset, output, index):
+def main(dataset, output, index, wmodel):
     ir_dataset = load(dataset)
     sub_collections = [ir_dataset] if not ir_dataset.get_datasets() else ir_dataset.get_datasets()
 
     for snapshot in sub_collections:
-        process_dataset(snapshot, index / snapshot.get_snapshot(), output / snapshot.get_snapshot())
+        process_dataset(snapshot, index / snapshot.get_snapshot(), output / snapshot.get_snapshot(), wmodel)
 
     # The ir-metadata description of your approach
     ir_metadata = Path(__file__).parent / "ir-metadata.yml"
