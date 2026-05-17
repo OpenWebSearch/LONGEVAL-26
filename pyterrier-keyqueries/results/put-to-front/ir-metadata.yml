@@ -1,0 +1,57 @@
+tag: ows-bm25-keyqueries
+
+actor:
+  team: OpenWebSearch
+
+research goal:
+  description: |
+    We use the LLM qrels that have been created without descriptions/narratives (which is the baseline for task 2) for reciprocal rank fusion and move all documents from those judgments to the top of BM25.
+
+platform:
+  software:
+    libraries:
+      - click
+      - tira
+      - python-terrier
+      - ir-datasets-longeval
+      - tirex-tracker
+
+implementation:
+  source:
+    repository: https://github.com/OpenWebSearch/LONGEVAL-26/
+
+data:
+  training data:
+    - name: None
+
+method:
+  # Boolean value indicating if it is a automatic (true) or manual (false) run
+  automatic: true
+
+  indexing:
+    tokenizer: Default from PyTerrier
+    stemmer: Default from PyTerrier
+    stopwords: Default from PyTerrier
+
+  retrieval:
+    - # Which ranking approach do you use? E.g., bm25
+      name: BM25
+
+      ##################################################
+      # Yes/No Questions
+      ##################################################
+
+      # Did you use any statistical ranking model? (yes/no)
+      lexical: yes
+
+      # Did you use any deep neural network model? (yes/no)
+      deep_neural_model: yes
+
+      # Did you use a sparse neural model? (yes/no):
+      sparse_neural_model: no
+
+      # Did you use a dense neural model? (yes/no):
+      dense_neural_model: no
+
+      # Did you use more than a single retrieval model? (yes/no):
+      single_stage_retrieval: no
