@@ -40,9 +40,11 @@ def process_dataset(ir_dataset, index_directory, output_directory):
     if (output_directory / "run.txt.gz").exists():
         return
 
+    explicit_feedback = pt.transformer.get_transformer(pt.io.read_results(f"rrf-relevance-feedback-{output_directory.name}.run.txt.gz"))
+
     index = get_index(ir_dataset, index_directory)
     with tracking(export_file_path=output_directory / "retrieval-ir-metadata.yml"):
-        bm25 = pt.terrier.Retriever(index, wmodel="BM25")
+        retrieval = pt.terrier.Retriever(index, wmodel="BM25")
 
         # potentially do some query processing
         topics = pd.DataFrame(
@@ -61,7 +63,10 @@ def process_dataset(ir_dataset, index_directory, output_directory):
             lambda i: " ".join(tokeniser.getTokens(i))
         )
 
-        run = bm25(topics)
+        query_rewriting = explicit_feedback >> pt.rewrite.RM3(index)
+        rewritten_queries = query_rewriting(topics)
+        rewritten_queries["query"] = rewritten_queries["query"].apply(lambda i: i.replace("^nan", "^0.00000001"))
+        run = retrieval(rewritten_queries)
         pt.io.write_results(run, output_directory / "run.txt.gz")
         copy(index_directory / "index-ir-metadata.yml", output_directory / "index-ir-metadata.yml")
 
